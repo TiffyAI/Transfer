@@ -64,26 +64,26 @@
 
 <div class="earnings-box">
   <p id="tiffyBalance">TIFFY Earnings: 0</p>
-  <p id="tetrisBalance">Tetris Earnings: 0</p>
+  <p id="tetrusScore">Tetris Earnings: 0</p>
   <p id="totalClaims">Total Claims: 0</p>
 
-  <button class="button" onclick="transferEarnings()">🔄 Transfer Earnings</button>
+  <button class="button" onclick="transferScore()">🔄 Transfer Earnings</button>
   <button class="button" onclick="withdrawAll()">💰 Withdraw All</button>
 </div>
 
 <script>
   // Load balances from localStorage or default to 0
   let tiffyEarnings = parseFloat(localStorage.getItem('tiffyEarnings')) || 0;
-  let tetrisEarnings = parseFloat(localStorage.getItem('tetrisEarnings')) || 0;
-
+  let tetrusScore = parseFloat(localStorage.getItem('tetrusScore')) || 0;
+L
   function updateDisplay() {
     document.getElementById("tiffyBalance").innerText = `TIFFY Earnings: ${tiffyEarnings}`;
-    document.getElementById("tetrisBalance").innerText = `Tetris Earnings: ${tetrisEarnings}`;
-    document.getElementById("totalClaims").innerText = `Total Claims: ${tiffyEarnings + tetrisEarnings}`;
+    document.getElementById("tetrisScore").innerText = `Tetris Earnings: ${tetrusScore}`;
+    document.getElementById("totalClaims").innerText = `Total Claims: ${tiffyEarnings + tetrusScore}`;
   }
 
   function transferEarnings() {
-    tiffyEarnings += tetrisEarnings;
+    tiffyEarnings += tetrusScore;
     tetrisEarnings = 0;
     saveBalances();
     updateDisplay();
@@ -91,10 +91,10 @@
   }
 
   function withdrawAll() {
-    const total = tiffyEarnings + tetrisEarnings;
+    const total = tiffyEarnings + tetrusScore;
     if (total > 0) {
       tiffyEarnings = 0;
-      tetrisEarnings = 0;
+      tetrusScore = 0;
       saveBalances();
       updateDisplay();
       alert(`Withdrew ${total} TIFFY.`);
@@ -105,7 +105,7 @@
 
   function saveBalances() {
     localStorage.setItem('tiffyEarnings', tiffyEarnings);
-    localStorage.setItem('tetrisEarnings', tetrisEarnings);
+    localStorage.setItem('tetrusScore', tetrusScore);
   }
 
   updateDisplay();
