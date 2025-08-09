@@ -1,58 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"/>
 <title>Transfer Tetris Earnings to TIFFY</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
 <style>
-  body {
-    background: #000;
-    color: #0ff;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 20px;
-  }
-  h1 { text-shadow: 0 0 10px #0ff; }
-  .info {
-    background: rgba(0,0,0,0.6);
-    border: 1px solid #0ff;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px #0ff;
-    display: inline-block;
-  }
-  .btn {
-    margin-top: 20px;
-    padding: 15px 30px;
-    font-size: 18px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: hotpink;
-    color: #fff;
-    box-shadow: 0 0 20px hotpink;
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 10px hotpink; }
-    50% { box-shadow: 0 0 30px hotpink; }
-    100% { box-shadow: 0 0 10px hotpink; }
-  }
+  body{background:#000;color:#0ff;font-family:sans-serif;text-align:center;padding:20px}
+  h1{text-shadow:0 0 10px #0ff}
+  .card{background:rgba(0,0,0,0.6);padding:20px;border:1px solid #0ff;border-radius:12px;display:inline-block;box-shadow:0 0 20px #0ff;margin-top:20px}
+  .btn{margin-top:20px;padding:12px 25px;font-size:16px;border:none;border-radius:8px;cursor:pointer}
+  .transfer{background:hotpink;color:#fff;box-shadow:0 0 15px hotpink;animation:pulse 1.5s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 10px hotpink}50%{box-shadow:0 0 30px hotpink}100%{box-shadow:0 0 10px hotpink}}
 </style>
 </head>
 <body>
 
-<h1>🎮 Transfer Tetris Earnings to TIFFY</h1>
+<h1>🎮 Transfer Tetris Earnings</h1>
+<button id="connectBtn">Connect Wallet</button>
 
-<div class="info">
-  <div><strong>Wallet:</strong> <span id="wallet">Not connected</span></div>
-  <div style="margin-top:10px"><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
+<div class="card" id="transferCard" style="display:none">
+  <div><strong>Wallet:</strong> <span id="walletAddress"></span></div>
+  <div><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
   <div><strong>Tetris Earnings:</strong> <span id="tetris">0</span></div>
   <div style="margin-top:10px;font-size:18px"><strong>Total Withdrawable:</strong> <span id="total">0</span></div>
-  <button class="btn" id="transferBtn" style="display:none">Transfer Earnings Now</button>
+  <button class="btn transfer" id="transferBtn" style="display:none">Transfer Now</button>
 </div>
 
 <script>
@@ -60,41 +33,57 @@
   let web3, provider, account;
 
   const wModal = new Web3Modal.default({
-    cacheProvider: false,
-    providerOptions: {
-      walletconnect: {
-        package: window.WalletConnectProvider?.default || {},
-        options: { rpc: {56:"https://bsc-dataseed.binance.org/"} }
-      }
+    cacheProvider:false,
+    providerOptions:{
+      walletconnect:{package:window.WalletConnectProvider?.default||{}, options:{ rpc:{56:"https://bsc-dataseed.binance.org/"}}}
     }
   });
 
-  async function connectWallet() {
+  document.getElementById("connectBtn").onclick = async() => {
     provider = await wModal.connect();
     web3 = new Web3(provider);
+
     const cid = await web3.eth.getChainId();
-    if (cid !== 56) {
-      alert("Please switch to BNB Smart Chain");
-      return;
+    if(cid !== 56){
+      try { 
+        await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
+      }
+      catch(e){
+        if(provider.isBitget || provider.isBitKeep){
+          try { 
+            await provider.request({ method:"wallet_addEthereumChain", params:[{chainId:"0x38",chainName:"BNB Smart Chain",rpcUrls:["https://bsc-dataseed.binance.org/"],nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},blockExplorerUrls:["https://bscscan.com"]}]});
+          }
+          catch{
+            alert("🌐 Bitget: please switch BSC manually.");
+            return;
+          }
+        } else { 
+          alert("❗ Please switch to BNB Smart Chain"); 
+          return; 
+        }
+      }
     }
+
     const accts = await web3.eth.getAccounts();
     account = accts[0];
-    document.getElementById("wallet").textContent = account;
+
+    document.getElementById("walletAddress").textContent = account;
+    document.getElementById("connectBtn").style.display = "none";
+    document.getElementById("transferCard").style.display = "inline-block";
     loadBalances();
+  };
+
+  function getClaimed(){
+    return parseInt(localStorage.getItem(`tiffyClaimed_${account}`) || "0");
   }
 
-  function getClaimedTiffy() {
-    const key = `tiffyClaimed_${account}`;
-    return parseInt(localStorage.getItem(key) || "0");
-  }
-
-  function getTetrisScore() {
+  function getTetris(){
     return parseInt(localStorage.getItem("tetrusScore") || "0");
   }
 
-  function loadBalances() {
-    const claimed = getClaimedTiffy();
-    const tetris = getTetrisScore();
+  function loadBalances(){
+    const claimed = getClaimed();
+    const tetris = getTetris();
     document.getElementById("claimed").textContent = claimed;
     document.getElementById("tetris").textContent = tetris;
     document.getElementById("total").textContent = claimed + tetris;
@@ -103,8 +92,8 @@
 
   document.getElementById("transferBtn").onclick = () => {
     const claimedKey = `tiffyClaimed_${account}`;
-    const claimed = getClaimedTiffy();
-    const tetris = getTetrisScore();
+    const claimed = getClaimed();
+    const tetris = getTetris();
     const newTotal = claimed + tetris;
 
     localStorage.setItem(claimedKey, newTotal);
@@ -114,7 +103,6 @@
     alert(`✅ Transferred ${tetris} Tetris earnings to TIFFY!`);
   };
 
-  connectWallet();
 })();
 </script>
 
