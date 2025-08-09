@@ -1,115 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TiffyAI Earnings</title>
-<style>
-  body {
-    background: linear-gradient(145deg, #000000, #0a0a2a);
-    color: #4af0f8;
-    font-family: 'Orbitron', sans-serif;
-    margin: 0;
-    padding: 20px;
-    text-align: center;
-  }
-
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 10px;
-    text-shadow: 0 0 15px #4af0f8;
-  }
-
-  .earnings-box {
-    margin: 40px auto;
-    padding: 30px;
-    max-width: 500px;
-    background: linear-gradient(145deg, #000000, #0a0a2a);
-    border: 2px solid #4af0f8;
-    border-radius: 20px;
-    box-shadow: 0 0 30px #4af0f8, inset 0 0 15px #4af0f8;
-    animation: pulseGlow 3s infinite ease-in-out;
-  }
-
-  @keyframes pulseGlow {
-    0% { box-shadow: 0 0 15px #4af0f8, inset 0 0 5px #4af0f8; }
-    50% { box-shadow: 0 0 40px #4af0f8, inset 0 0 20px #4af0f8; }
-    100% { box-shadow: 0 0 15px #4af0f8, inset 0 0 5px #4af0f8; }
-  }
-
-  .button {
-    display: inline-block;
-    margin: 10px;
-    padding: 15px 25px;
-    font-size: 1rem;
-    font-weight: bold;
-    color: #ffffff;
-    background: linear-gradient(145deg, #ff4af0, #cc0099);
-    border: none;
-    border-radius: 12px;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: 0 0 20px #ff4af0;
-    transition: all 0.3s ease;
-  }
-  .button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 35px #ff4af0;
-  }
-</style>
+  <meta charset="UTF-8">
+  <title>TIFFY Earnings Transfer</title>
+  <style>
+    body {
+      background: #000014;
+      color: #4af0f8;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding-top: 60px;
+    }
+    #container {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      background: linear-gradient(145deg, #000000, #0a0a2a);
+      border: 2px solid #4af0f8;
+      border-radius: 20px;
+      box-shadow: 0 0 30px #4af0f8, inset 0 0 15px #4af0f8;
+      animation: pulseGlow 3s infinite ease-in-out;
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 15px #4af0f8, inset 0 0 5px #4af0f8; }
+      50% { box-shadow: 0 0 40px #4af0f8, inset 0 0 20px #4af0f8; }
+      100% { box-shadow: 0 0 15px #4af0f8, inset 0 0 5px #4af0f8; }
+    }
+    button {
+      background: #ff00aa;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      margin-top: 15px;
+      cursor: pointer;
+      box-shadow: 0 0 15px #ff00aa;
+      animation: pulseButton 1.5s infinite alternate;
+    }
+    @keyframes pulseButton {
+      0% { box-shadow: 0 0 10px #ff00aa; }
+      100% { box-shadow: 0 0 25px #ff00aa; }
+    }
+  </style>
 </head>
 <body>
 
-<h1>💎 TiffyAI Earnings</h1>
+  <div id="container">
+    <h2>Withdrawable Amount</h2>
+    <div>
+      <strong id="tiffyCount">0 TIFFY</strong> → $<span id="usdValue">0.00</span>
+    </div>
+    <button id="transferBtn">Transfer Earnings</button>
+  </div>
 
-<div class="earnings-box">
-  <p id="tiffyBalance">TIFFY Earnings: 0</p>
-  <p id="tetrusScore">Tetris Earnings: 0</p>
-  <p id="totalClaims">Total Claims: 0</p>
+  <script>
+    const account = window.account || "guest"; // Replace with actual wallet address if available
+    const claimsKey = `tiffyClaimed_${account}`;
+    const tetrusKey = "tetrusScore";
+    const PRICE_JSON_PATH = "/TIFFY-Market-Value/price.json";
 
-  <button class="button" onclick="transferScore()">🔄 Transfer Earnings</button>
-  <button class="button" onclick="withdrawAll()">💰 Withdraw All</button>
-</div>
+    async function updateDisplay() {
+      const claimedTIFFY = parseInt(localStorage.getItem(claimsKey) || "0");
+      const tetrusScore = parseInt(localStorage.getItem(tetrusKey) || "0");
+      const totalTIFFY = claimedTIFFY + tetrusScore;
 
-<script>
-  // Load balances from localStorage or default to 0
-  let tiffyEarnings = parseFloat(localStorage.getItem('tiffyEarnings')) || 0;
-  let tetrusScore = parseFloat(localStorage.getItem('tetrusScore')) || 0;
-L
-  function updateDisplay() {
-    document.getElementById("tiffyBalance").innerText = `TIFFY Earnings: ${tiffyEarnings}`;
-    document.getElementById("tetrusScore").innerText = `Tetris Earnings: ${tetrusScore}`;
-    document.getElementById("totalClaims").innerText = `Total Claims: ${tiffyEarnings + tetrusScore}`;
-  }
+      document.getElementById("tiffyCount").textContent = `${totalTIFFY} TIFFY`;
 
-  function transferEarnings() {
-    tiffyEarnings += tetrusScore;
-    tetrusScore = 0;
-    saveBalances();
-    updateDisplay();
-    alert("Tetris earnings transferred to TIFFY balance.");
-  }
-
-  function withdrawAll() {
-    const total = tiffyEarnings + tetrusScore;
-    if (total > 0) {
-      tiffyEarnings = 0;
-      tetrusScore = 0;
-      saveBalances();
-      updateDisplay();
-      alert(`Withdrew ${total} TIFFY.`);
-    } else {
-      alert("No earnings to withdraw.");
+      try {
+        const resp = await fetch(PRICE_JSON_PATH, { cache: "no-store" });
+        const data = await resp.json();
+        const priceUSD = parseFloat(data.tiffyToUSD);
+        document.getElementById("usdValue").textContent = (totalTIFFY * priceUSD).toFixed(2);
+      } catch (err) {
+        console.error("Price fetch failed:", err);
+      }
     }
-  }
 
-  function saveBalances() {
-    localStorage.setItem('tiffyEarnings', tiffyEarnings);
-    localStorage.setItem('tetrusScore', tetrusScore);
-  }
+    document.getElementById("transferBtn").addEventListener("click", () => {
+      const claimedTIFFY = parseInt(localStorage.getItem(claimsKey) || "0");
+      const tetrusScore = parseInt(localStorage.getItem(tetrusKey) || "0");
 
-  updateDisplay();
-</script>
+      const newTotal = claimedTIFFY + tetrusScore;
+      localStorage.setItem(claimsKey, newTotal);
+      localStorage.setItem(tetrusKey, 0);
+
+      updateDisplay();
+      alert("✅ Earnings transferred to your withdrawable balance!");
+    });
+
+    document.addEventListener("DOMContentLoaded", updateDisplay);
+  </script>
 
 </body>
 </html>
