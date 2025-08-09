@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TiffyAI Earnings</title>
+<style>
+  body {
+    background: linear-gradient(145deg, #000000, #0a0a2a);
+    color: #4af0f8;
+    font-family: 'Orbitron', sans-serif;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 15px #4af0f8;
+  }
+
+  .earnings-box {
+    margin: 40px auto;
+    padding: 30px;
+    max-width: 500px;
+    background: linear-gradient(145deg, #000000, #0a0a2a);
+    border: 2px solid #4af0f8;
+    border-radius: 20px;
+    box-shadow: 0 0 30px #4af0f8, inset 0 0 15px #4af0f8;
+    animation: pulseGlow 3s infinite ease-in-out;
+  }
+
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 15px #4af0f8, inset 0 0 5px #4af0f8; }
+    50% { box-shadow: 0 0 40px #4af0f8, inset 0 0 20px #4af0f8; }
+    100% { box-shadow: 0 0 15px #4af0f8, inset 0 0 5px #4af0f8; }
+  }
+
+  .button {
+    display: inline-block;
+    margin: 10px;
+    padding: 15px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffffff;
+    background: linear-gradient(145deg, #ff4af0, #cc0099);
+    border: none;
+    border-radius: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 0 20px #ff4af0;
+    transition: all 0.3s ease;
+  }
+  .button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 35px #ff4af0;
+  }
+</style>
+</head>
+<body>
+
+<h1>💎 TiffyAI Earnings</h1>
+
+<div class="earnings-box">
+  <p id="tiffyBalance">TIFFY Earnings: 0</p>
+  <p id="tetrisBalance">Tetris Earnings: 0</p>
+  <p id="totalClaims">Total Claims: 0</p>
+
+  <button class="button" onclick="transferEarnings()">🔄 Transfer Earnings</button>
+  <button class="button" onclick="withdrawAll()">💰 Withdraw All</button>
+</div>
+
+<script>
+  // Load balances from localStorage or default to 0
+  let tiffyEarnings = parseFloat(localStorage.getItem('tiffyEarnings')) || 0;
+  let tetrisEarnings = parseFloat(localStorage.getItem('tetrisEarnings')) || 0;
+
+  function updateDisplay() {
+    document.getElementById("tiffyBalance").innerText = `TIFFY Earnings: ${tiffyEarnings}`;
+    document.getElementById("tetrisBalance").innerText = `Tetris Earnings: ${tetrisEarnings}`;
+    document.getElementById("totalClaims").innerText = `Total Claims: ${tiffyEarnings + tetrisEarnings}`;
+  }
+
+  function transferEarnings() {
+    tiffyEarnings += tetrisEarnings;
+    tetrisEarnings = 0;
+    saveBalances();
+    updateDisplay();
+    alert("Tetris earnings transferred to TIFFY balance.");
+  }
+
+  function withdrawAll() {
+    const total = tiffyEarnings + tetrisEarnings;
+    if (total > 0) {
+      tiffyEarnings = 0;
+      tetrisEarnings = 0;
+      saveBalances();
+      updateDisplay();
+      alert(`Withdrew ${total} TIFFY.`);
+    } else {
+      alert("No earnings to withdraw.");
+    }
+  }
+
+  function saveBalances() {
+    localStorage.setItem('tiffyEarnings', tiffyEarnings);
+    localStorage.setItem('tetrisEarnings', tetrisEarnings);
+  }
+
+  updateDisplay();
+</script>
+
+</body>
+</html>
