@@ -78,13 +78,13 @@
 L
   function updateDisplay() {
     document.getElementById("tiffyBalance").innerText = `TIFFY Earnings: ${tiffyEarnings}`;
-    document.getElementById("tetrisScore").innerText = `Tetris Earnings: ${tetrusScore}`;
+    document.getElementById("tetrusScore").innerText = `Tetris Earnings: ${tetrusScore}`;
     document.getElementById("totalClaims").innerText = `Total Claims: ${tiffyEarnings + tetrusScore}`;
   }
 
   function transferEarnings() {
     tiffyEarnings += tetrusScore;
-    tetrisEarnings = 0;
+    tetrusScore = 0;
     saveBalances();
     updateDisplay();
     alert("Tetris earnings transferred to TIFFY balance.");
