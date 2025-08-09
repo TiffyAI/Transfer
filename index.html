@@ -7,18 +7,85 @@
 <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
 <style>
-  body{background:#000;color:#0ff;font-family:sans-serif;text-align:center;padding:20px}
-  h1{text-shadow:0 0 10px #0ff}
-  .card{background:rgba(0,0,0,0.6);padding:20px;border:1px solid #0ff;border-radius:12px;display:inline-block;box-shadow:0 0 20px #0ff;margin-top:20px}
-  .btn{margin-top:20px;padding:12px 25px;font-size:16px;border:none;border-radius:8px;cursor:pointer}
-  .transfer{background:hotpink;color:#fff;box-shadow:0 0 15px hotpink;animation:pulse 1.5s infinite}
-  @keyframes pulse{0%{box-shadow:0 0 10px hotpink}50%{box-shadow:0 0 30px hotpink}100%{box-shadow:0 0 10px hotpink}}
+  body {
+    background: radial-gradient(circle at top, #020024, #090979, #000);
+    color: #0ff;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    text-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    margin-bottom: 30px;
+  }
+  .card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border: 1px solid #0ff;
+    border-radius: 12px;
+    display: inline-block;
+    box-shadow: 0 0 20px #0ff, inset 0 0 30px rgba(0,255,255,0.2);
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+  }
+  .btn {
+    margin-top: 20px;
+    padding: 14px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+  }
+  /* Connect Button Style */
+  #connectBtn {
+    background: rgba(0, 200, 255, 0.15);
+    border: 1px solid #0ff;
+    color: #0ff;
+    box-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    backdrop-filter: blur(8px);
+    animation: pulseBlue 1.8s infinite;
+  }
+  #connectBtn:hover {
+    background: rgba(0, 200, 255, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 0 30px #00faff, 0 0 60px #00faff;
+  }
+  @keyframes pulseBlue {
+    0% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+    50% { box-shadow: 0 0 35px #00faff, 0 0 60px #00faff; }
+    100% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+  }
+  /* Transfer Button Style */
+  .transfer {
+    background: rgba(255, 20, 147, 0.2);
+    border: 1px solid hotpink;
+    color: hotpink;
+    box-shadow: 0 0 20px hotpink, 0 0 40px hotpink;
+    animation: pulsePink 1.5s infinite;
+  }
+  .transfer:hover {
+    background: rgba(255, 20, 147, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 0 30px hotpink, 0 0 60px hotpink;
+  }
+  @keyframes pulsePink {
+    0% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+    50% { box-shadow: 0 0 35px hotpink, 0 0 60px hotpink; }
+    100% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+  }
 </style>
 </head>
 <body>
 
-<h1>🎮 Transfer Tetris Earnings</h1>
-<button id="connectBtn">Connect Wallet</button>
+<h1>🚀 Transfer Tetris Earnings</h1>
+
+<audio id="clickSound" src="click.wav" preload="auto"></audio>
+
+<button id="connectBtn" class="btn">Connect Wallet</button>
 
 <div class="card" id="transferCard" style="display:none">
   <div><strong>Wallet:</strong> <span id="walletAddress"></span></div>
@@ -31,6 +98,7 @@
 <script>
 (async ()=>{
   let web3, provider, account;
+  const clickSound = document.getElementById("clickSound");
 
   const wModal = new Web3Modal.default({
     cacheProvider:false,
@@ -40,6 +108,7 @@
   });
 
   document.getElementById("connectBtn").onclick = async() => {
+    clickSound.play();
     provider = await wModal.connect();
     web3 = new Web3(provider);
 
@@ -91,6 +160,7 @@
   }
 
   document.getElementById("transferBtn").onclick = () => {
+    clickSound.play();
     const claimedKey = `tiffyClaimed_${account}`;
     const claimed = getClaimed();
     const tetris = getTetris();
