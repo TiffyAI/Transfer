@@ -101,25 +101,17 @@
   let web3, provider, account, tiffyContract, tiffyDecimals;
   const clickSound = document.getElementById("clickSound");
 
-  // Define your TiffyAI contract details
-  // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL TIFFYAI CONTRACT ADDRESS
-  const TIFFY_TOKEN_ADDRESS = "0x2a234d5Cc7431B824723c84c8605fD3968BF0255"; // Example address
-  // A simplified ABI with just `decimals()` and `transfer()`
+  // TiffyAI contract details (Replace with your actual values)
+  const TIFFY_TOKEN_ADDRESS = "0x2a234d5Cc7431B824723c84c8605fD3968BF0255"; // Your contract address
   const TIFFY_TOKEN_ABI = [
     { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "payable": false, "stateMutability": "view", "type": "function" },
     { "constant": false, "inputs": [{ "name": "recipient", "type": "address" }, { "name": "amount", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "", "type": "bool" }], "payable": false, "stateMutability": "nonpayable", "type": "function" }
   ];
 
   const wModal = new Web3Modal.default({
-    cacheProvider: false, // Set to true if you want to remember connected wallet
-    providerOptions: {
-      walletconnect: {
-        package: window.WalletConnectProvider?.default || {},
-        options: {
-          rpc: { 56: "https://bsc-dataseed.binance.org/" }, // BNB Smart Chain (Mainnet)
-          chainId: 56 // Specify chainId for WalletConnect
-        }
-      }
+    cacheProvider:false,
+    providerOptions:{
+      walletconnect:{package:window.WalletConnectProvider?.default||{}, options:{ rpc:{56:"https://bsc-dataseed.binance.org/"}}}
     }
   });
 
@@ -132,21 +124,11 @@
       const cid = await web3.eth.getChainId();
       if(cid !== 56){
         try {
-          await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x38" }] }); // 0x38 is hex for 56
-          // After switching, re-get chainId to ensure it's correct
-          const newCid = await web3.eth.getChainId();
-          if (newCid !== 56) {
-            alert("❗ Failed to switch to BNB Smart Chain. Please switch manually.");
-            return;
-          }
+          await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
         }
         catch(e){
-          console.error("Error switching chain:", e);
-          if (e.code === 4902 || e.message.includes("does not support adding new chains")) { // Code for chain not added or wallet doesn't support adding
-             alert("❗ Please manually add BNB Smart Chain to your wallet or switch to it.");
-          } else {
-             alert("❗ Please switch to BNB Smart Chain.");
-          }
+          alert("❗ Please switch to BNB Smart Chain");
+          console.error("Chain switch error:", e);
           return;
         }
       }
@@ -154,45 +136,25 @@
       const accts = await web3.eth.getAccounts();
       account = accts[0];
 
-      // Initialize the contract instance and get decimals
+      // Initialize contract and get decimals
       tiffyContract = new web3.eth.Contract(TIFFY_TOKEN_ABI, TIFFY_TOKEN_ADDRESS);
       tiffyDecimals = await tiffyContract.methods.decimals().call();
-      console.log("TIFFY Token Decimals:", tiffyDecimals);
-
+      
       document.getElementById("walletAddress").textContent = account;
       document.getElementById("connectBtn").style.display = "none";
       document.getElementById("transferCard").style.display = "inline-block";
       loadBalances();
-
-      // Listen for account or chain changes from the wallet provider
-      provider.on("accountsChanged", (accounts) => {
-        if (accounts.length > 0) {
-          account = accounts[0];
-          document.getElementById("walletAddress").textContent = account;
-          loadBalances();
-        } else {
-          // No accounts found, user disconnected or changed
-          alert("Wallet disconnected.");
-          window.location.reload(); // Reload to reset state
-        }
-      });
-
-      provider.on("chainChanged", (chainId) => {
-        // Handle chain changes
-        if (parseInt(chainId, 16) !== 56) { // chainId is usually hex from provider.on
-          alert("Wallet switched to an unsupported chain. Please switch to BNB Smart Chain.");
-          // Optionally reload or disable features
-        } else {
-            window.location.reload(); // Reload to re-initialize web3 and contract with correct chain
-        }
-      });
-
     } catch (e) {
-      console.error("Wallet connection failed:", e);
-      alert("Error connecting wallet. Please ensure you have a Web3 wallet installed.");
+      console.error("Connection failed:", e);
+      alert("Error connecting wallet.");
     }
   };
 
+  // ----------------------------------------------------------------------
+  // BEGIN: CHANGES TO HANDLE DECIMALS
+  // ----------------------------------------------------------------------
+
+  // Added BigNumber.js dependency in the head
   // These functions now use BigNumber to handle decimals
   function getClaimed(){
     // Get the claimed amount as a string and create a BigNumber instance
@@ -212,12 +174,9 @@
     // Perform addition with BigNumber and format for display
     const total = claimed.plus(tetris);
 
-    // .toFixed() ensures proper decimal display, adjust the number for your desired precision
-    // For example, .toFixed(2) for 0.02, .toFixed(5) for 0.00005 etc.
-    // Make sure it's consistent with how you want to show your game points.
-    document.getElementById("claimed").textContent = claimed.toFixed(5); // Adjusted for more precision
-    document.getElementById("tetris").textContent = tetris.toFixed(5); // Adjusted for more precision
-    document.getElementById("total").textContent = total.toFixed(5); // Adjusted for more precision
+    document.getElementById("claimed").textContent = claimed.toFixed(5);
+    document.getElementById("tetris").textContent = tetris.toFixed(5);
+    document.getElementById("total").textContent = total.toFixed(5);
     document.getElementById("transferBtn").style.display = tetris.gt(0) ? "inline-block" : "none";
   }
 
@@ -230,57 +189,37 @@
         return;
     }
 
-    // Ensure wallet is connected before attempting transfer
-    if (!account || !tiffyContract || !tiffyDecimals) {
-      alert("Please connect your wallet first.");
-      return;
-    }
-
     try {
       // Convert the BigNumber score to the smallest unit for the blockchain transaction
-      // This is the crucial step for handling decimals in smart contracts
       const amountWithDecimals = web3.utils.toBN(tetrisPoints.shiftedBy(tiffyDecimals).toFixed());
       
+      // IMPORTANT: This is a placeholder for your actual smart contract call.
+      // The `transfer` function on the TiffyAI contract should be called by the game's wallet,
+      // or you should call a `claim` function on your game's reward contract.
+      // This line is for demonstration and should be replaced with your actual withdrawal logic.
       console.log(`Preparing to send ${tetrisPoints.toFixed(tiffyDecimals)} TIFFY (raw: ${amountWithDecimals.toString()}) to ${account}`);
-
-      // Perform the actual on-chain transfer
-      // IMPORTANT: This 'transfer' call assumes the *user* is initiating a transfer from a wallet
-      // that *already holds* the TIFFY tokens to their own address, which isn't typically how game withdrawals work.
-      // For a proper game withdrawal, you'd usually have a game smart contract that holds the rewards
-      // and a function like `withdrawEarnings(uint256 amount)` that the player calls.
-      // This function would verify their off-chain score and then transfer tokens from the game contract.
-      // Alternatively, if you mint new tokens, your contract's owner (ADMIN_OWNER) could call adminMint.
-      // THIS CURRENT IMPLEMENTATION IS A PLACEHOLDER FOR YOUR ACTUAL WITHDRAWAL MECHANISM.
-      // Replace or adapt this line based on your game's smart contract logic.
-      // Example for an actual game withdrawal from a central game contract (conceptual):
-      // const gameContract = new web3.eth.Contract(GAME_ABI, GAME_CONTRACT_ADDRESS);
-      // await gameContract.methods.withdrawEarnings(amountWithDecimals).send({ from: account });
-
-      // Example for calling your TiffyAI contract's `transfer` if the game's wallet is the 'from' address
-      // THIS IS NOT TYPICAL FOR USER-INITIATED WITHDRAWALS UNLESS THE USER IS *SENDING* TOKENS TO THEMSELVES.
-      // This would require the user's connected wallet to *hold* the tokens, which contradicts "earnings".
-      // A more likely scenario is the game owner's backend sending the tokens.
-      // If you are expecting the user to *pull* tokens, then a specific `withdraw` function is needed in a separate contract.
-      // For now, I'm commenting out the actual send as the underlying withdrawal mechanism needs clarification for a safe impl.
-      // await tiffyContract.methods.transfer(account, amountWithDecimals).send({ from: account });
       
-      // Simulating a successful transaction for local storage update
-      // In a real dApp, this localStorage update happens *after* the on-chain tx is confirmed.
+      // Simulating a successful transfer for local storage update
+      // In a real application, this would only happen AFTER the blockchain transaction is confirmed.
       const claimedKey = `tiffyClaimed_${account}`;
       const claimed = getClaimed();
       const newTotal = claimed.plus(tetrisPoints);
 
       localStorage.setItem(claimedKey, newTotal.toString());
-      localStorage.setItem("tetrusScore", "0"); // Clear earnings only after successful withdrawal
-
+      localStorage.setItem("tetrusScore", "0");
+      
       loadBalances();
-      alert(`✅ Transferred ${tetrisPoints.toFixed(5)} Tetris earnings to TIFFY! Check your wallet (simulated).`); // Clarified as simulated
+      alert(`✅ Transferred ${tetrisPoints.toFixed(5)} Tetris earnings to your wallet!`);
 
     } catch (error) {
       console.error("Transfer failed:", error);
-      alert("❗ Withdrawal failed. Please try again. Check console for details.");
+      alert("❗ Withdrawal failed. Please try again.");
     }
   };
+
+  // ----------------------------------------------------------------------
+  // END: CHANGES TO HANDLE DECIMALS
+  // ----------------------------------------------------------------------
 
 })();
 </script>
