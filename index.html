@@ -7,76 +7,76 @@
 <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 <script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
 <style>
-  body {
-    background: radial-gradient(circle at top, #020024, #090979, #000);
-    color: #0ff;
-    font-family: 'Orbitron', sans-serif;
-    text-align: center;
-    padding: 20px;
-  }
-  h1 {
-    text-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
-    margin-bottom: 30px;
-  }
-  .card {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border: 1px solid #0ff;
-    border-radius: 12px;
-    display: inline-block;
-    box-shadow: 0 0 20px #0ff, inset 0 0 30px rgba(0,255,255,0.2);
-    backdrop-filter: blur(10px);
-    margin-top: 20px;
-  }
-  .btn {
-    margin-top: 20px;
-    padding: 14px 30px;
-    font-size: 18px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-family: 'Orbitron', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    transition: all 0.3s ease;
-  }
-  /* Connect Button Style */
-  #connectBtn {
-    background: rgba(0, 200, 255, 0.15);
-    border: 1px solid #0ff;
-    color: #0ff;
-    box-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
-    backdrop-filter: blur(8px);
-    animation: pulseBlue 1.8s infinite;
-  }
-  #connectBtn:hover {
-    background: rgba(0, 200, 255, 0.3);
-    transform: scale(1.05);
-    box-shadow: 0 0 30px #00faff, 0 0 60px #00faff;
-  }
-  @keyframes pulseBlue {
-    0% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
-    50% { box-shadow: 0 0 35px #00faff, 0 0 60px #00faff; }
-    100% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
-  }
-  /* Transfer Button Style */
-  .transfer {
-    background: rgba(255, 20, 147, 0.2);
-    border: 1px solid hotpink;
-    color: hotpink;
-    box-shadow: 0 0 20px hotpink, 0 0 40px hotpink;
-    animation: pulsePink 1.5s infinite;
-  }
-  .transfer:hover {
-    background: rgba(255, 20, 147, 0.3);
-    transform: scale(1.05);
-    box-shadow: 0 0 30px hotpink, 0 0 60px hotpink;
-  }
-  @keyframes pulsePink {
-    0% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
-    50% { box-shadow: 0 0 35px hotpink, 0 0 60px hotpink; }
-    100% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
-  }
+  body {
+    background: radial-gradient(circle at top, #020024, #090979, #000);
+    color: #0ff;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    text-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    margin-bottom: 30px;
+  }
+  .card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border: 1px solid #0ff;
+    border-radius: 12px;
+    display: inline-block;
+    box-shadow: 0 0 20px #0ff, inset 0 0 30px rgba(0,255,255,0.2);
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+  }
+  .btn {
+    margin-top: 20px;
+    padding: 14px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+  }
+  /* Connect Button Style */
+  #connectBtn {
+    background: rgba(0, 200, 255, 0.15);
+    border: 1px solid #0ff;
+    color: #0ff;
+    box-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    backdrop-filter: blur(8px);
+    animation: pulseBlue 1.8s infinite;
+  }
+  #connectBtn:hover {
+    background: rgba(0, 200, 255, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 0 30px #00faff, 0 0 60px #00faff;
+  }
+  @keyframes pulseBlue {
+    0% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+    50% { box-shadow: 0 0 35px #00faff, 0 0 60px #00faff; }
+    100% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+  }
+  /* Transfer Button Style */
+  .transfer {
+    background: rgba(255, 20, 147, 0.2);
+    border: 1px solid hotpink;
+    color: hotpink;
+    box-shadow: 0 0 20px hotpink, 0 0 40px hotpink;
+    animation: pulsePink 1.5s infinite;
+  }
+  .transfer:hover {
+    background: rgba(255, 20, 147, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 0 30px hotpink, 0 0 60px hotpink;
+  }
+  @keyframes pulsePink {
+    0% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+    50% { box-shadow: 0 0 35px hotpink, 0 0 60px hotpink; }
+    100% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+  }
 </style>
 </head>
 <body>
@@ -88,90 +88,104 @@
 <button id="connectBtn" class="btn">Connect Wallet</button>
 
 <div class="card" id="transferCard" style="display:none">
-  <div><strong>Wallet:</strong> <span id="walletAddress"></span></div>
-  <div><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
-  <div><strong>Tetris Earnings:</strong> <span id="tetris">0</span></div>
-  <div style="margin-top:10px;font-size:18px"><strong>Total Withdrawable:</strong> <span id="total">0</span></div>
-  <button class="btn transfer" id="transferBtn" style="display:none">Transfer Now</button>
+  <div><strong>Wallet:</strong> <span id="walletAddress"></span></div>
+  <div><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
+  <div><strong>Tetris Earnings:</strong> <span id="tetris">0</span></div>
+  <div style="margin-top:10px;font-size:18px"><strong>Total Withdrawable:</strong> <span id="total">0</span></div>
+  <button class="btn transfer" id="transferBtn" style="display:none">Transfer Now</button>
 </div>
 
 <script>
 (async ()=>{
-  let web3, provider, account;
-  const clickSound = document.getElementById("clickSound");
+  let web3, provider, account;
+  const clickSound = document.getElementById("clickSound");
 
-  const wModal = new Web3Modal.default({
-    cacheProvider:false,
-    providerOptions:{
-      walletconnect:{package:window.WalletConnectProvider?.default||{}, options:{ rpc:{56:"https://bsc-dataseed.binance.org/"}}}
-    }
-  });
+  const wModal = new Web3Modal.default({
+    cacheProvider:false,
+    providerOptions:{
+      walletconnect:{package:window.WalletConnectProvider?.default||{}, options:{ rpc:{56:"https://bsc-dataseed.binance.org/"}}}
+    }
+  });
 
-  document.getElementById("connectBtn").onclick = async() => {
-    clickSound.play();
-    provider = await wModal.connect();
-    web3 = new Web3(provider);
+  document.getElementById("connectBtn").onclick = async() => {
+    clickSound.play();
+    provider = await wModal.connect();
+    web3 = new Web3(provider);
 
-    const cid = await web3.eth.getChainId();
-    if(cid !== 56){
-      try { 
-        await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
-      }
-      catch(e){
-        if(provider.isBitget || provider.isBitKeep){
-          try { 
-            await provider.request({ method:"wallet_addEthereumChain", params:[{chainId:"0x38",chainName:"BNB Smart Chain",rpcUrls:["https://bsc-dataseed.binance.org/"],nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},blockExplorerUrls:["https://bscscan.com"]}]});
-          }
-          catch{
-            alert("🌐 Bitget: please switch BSC manually.");
-            return;
-          }
-        } else { 
-          alert("❗ Please switch to BNB Smart Chain"); 
-          return; 
-        }
-      }
-    }
+    const cid = await web3.eth.getChainId();
+    if(cid !== 56){
+      try { 
+        await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
+      }
+      catch(e){
+        if(provider.isBitget || provider.isBitKeep){
+          try { 
+            await provider.request({ method:"wallet_addEthereumChain", params:[{chainId:"0x38",chainName:"BNB Smart Chain",rpcUrls:["https://bsc-dataseed.binance.org/"],nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},blockExplorerUrls:["https://bscscan.com"]}]});
+          }
+          catch{
+            alert("🌐 Bitget: please switch BSC manually.");
+            return;
+          }
+        } else { 
+          alert("❗ Please switch to BNB Smart Chain"); 
+          return; 
+        }
+      }
+    }
 
-    const accts = await web3.eth.getAccounts();
-    account = accts[0];
+    const accts = await web3.eth.getAccounts();
+    account = accts[0];
 
-    document.getElementById("walletAddress").textContent = account;
-    document.getElementById("connectBtn").style.display = "none";
-    document.getElementById("transferCard").style.display = "inline-block";
-    loadBalances();
-  };
+    document.getElementById("walletAddress").textContent = account;
+    document.getElementById("connectBtn").style.display = "none";
+    document.getElementById("transferCard").style.display = "inline-block";
+    loadBalances();
+  };
 
-  function getClaimed(){
-    return parseInt(localStorage.getItem(`tiffyClaimed_${account}`) || "0");
-  }
+  // --- START of changes ---
 
-  function getTetris(){
-    return parseInt(localStorage.getItem("tetrusScore") || "0");
-  }
+  // Use parseFloat to handle decimal values from localStorage
+  function getClaimed(){
+    return parseFloat(localStorage.getItem(`tiffyClaimed_${account}`) || "0");
+  }
 
-  function loadBalances(){
-    const claimed = getClaimed();
-    const tetris = getTetris();
-    document.getElementById("claimed").textContent = claimed;
-    document.getElementById("tetris").textContent = tetris;
-    document.getElementById("total").textContent = claimed + tetris;
-    document.getElementById("transferBtn").style.display = tetris > 0 ? "inline-block" : "none";
-  }
+  function getTetris(){
+    // Assuming tetrusScore is stored as a decimal in the game script
+    return parseFloat(localStorage.getItem("tetrusScore") || "0");
+  }
 
-  document.getElementById("transferBtn").onclick = () => {
-    clickSound.play();
-    const claimedKey = `tiffyClaimed_${account}`;
-    const claimed = getClaimed();
-    const tetris = getTetris();
-    const newTotal = claimed + tetris;
+  function loadBalances(){
+    const claimed = getClaimed();
+    const tetris = getTetris();
+    document.getElementById("claimed").textContent = claimed;
+    document.getElementById("tetris").textContent = tetris;
+    
+    // Ensure the addition is a numeric operation
+    const total = claimed + tetris;
+    // Display the total with a fixed decimal precision
+    document.getElementById("total").textContent = total.toFixed(2);
+    
+    // Check if tetris earnings are greater than 0 before showing the button
+    document.getElementById("transferBtn").style.display = tetris > 0 ? "inline-block" : "none";
+  }
 
-    localStorage.setItem(claimedKey, newTotal);
-    localStorage.setItem("tetrusScore", "0");
+  document.getElementById("transferBtn").onclick = () => {
+    clickSound.play();
+    const claimedKey = `tiffyClaimed_${account}`;
+    const claimed = getClaimed();
+    const tetris = getTetris();
+    const newTotal = claimed + tetris;
 
-    loadBalances();
-    alert(`✅ Transferred ${tetris} Tetris earnings to TIFFY!`);
-  };
+    // Store the new total as a string in local storage
+    localStorage.setItem(claimedKey, newTotal.toString());
+    // Reset the tetris score to 0
+    localStorage.setItem("tetrusScore", "0");
+
+    loadBalances();
+    alert(`✅ Transferred ${tetris.toFixed(2)} Tetris earnings to TIFFY!`);
+  };
+
+  // --- END of changes ---
 
 })();
 </script>
