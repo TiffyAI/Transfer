@@ -151,18 +151,18 @@
   };
 
   // ----------------------------------------------------------------------
-  // BEGIN: CHANGES TO HANDLE DECIMALS
-  // The only changes are in the `get...` functions, `loadBalances`, and `transferBtn.onclick`.
+  // BEGIN OF CHANGES
+  // The only parts modified are the get... functions, loadBalances(), and transferBtn.onclick
   // ----------------------------------------------------------------------
 
   function getClaimed(){
-    // Read the value as a string from local storage to preserve decimals
+    // Changed to read the value as a string and create a BigNumber instance
     const claimedStr = localStorage.getItem(`tiffyClaimed_${account}`) || "0";
     return new BigNumber(claimedStr);
   }
 
   function getTetris(){
-    // Read the value as a string from local storage to preserve decimals
+    // Changed to read the value as a string and create a BigNumber instance
     const tetrisStr = localStorage.getItem("tetrusScore") || "0";
     return new BigNumber(tetrisStr);
   }
@@ -192,7 +192,6 @@
 
     try {
       // CRITICAL STEP: Convert the decimal number from BigNumber to a blockchain-friendly BigInt
-      // This multiplies the score by 10^decimals (e.g., 1.02 * 10^18)
       const amountWithDecimals = web3.utils.toBN(tetrisPoints.shiftedBy(tiffyDecimals).toFixed());
       
       // Placeholder for your actual on-chain withdrawal logic.
@@ -217,7 +216,7 @@
   };
 
   // ----------------------------------------------------------------------
-  // END: CHANGES TO HANDLE DECIMALS
+  // END OF CHANGES
   // ----------------------------------------------------------------------
 
 })();
