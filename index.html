@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Transfer Tetris Earnings to TIFFY</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bignumber.js@9.0.2/bignumber.min.js"></script>
+<style>
+  body {
+    background: radial-gradient(circle at top, #020024, #090979, #000);
+    color: #0ff;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    text-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    margin-bottom: 30px;
+  }
+  .card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border: 1px solid #0ff;
+    border-radius: 12px;
+    display: inline-block;
+    box-shadow: 0 0 20px #0ff, inset 0 0 30px rgba(0,255,255,0.2);
+    backdrop-filter: blur(10px);
+    margin-top: 20px;
+  }
+  .btn {
+    margin-top: 20px;
+    padding: 14px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+  }
+  /* Connect Button Style */
+  #connectBtn {
+    background: rgba(0, 200, 255, 0.15);
+    border: 1px solid #0ff;
+    color: #0ff;
+    box-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    backdrop-filter: blur(8px);
+    animation: pulseBlue 1.8s infinite;
+  }
+  #connectBtn:hover {
+    background: rgba(0, 200, 255, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 0 30px #00faff, 0 0 60px #00faff;
+  }
+  @keyframes pulseBlue {
+    0% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+    50% { box-shadow: 0 0 35px #00faff, 0 0 60px #00faff; }
+    100% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+  }
+  /* Transfer Button Style */
+  .transfer {
+    background: rgba(255, 20, 147, 0.2);
+    border: 1px solid hotpink;
+    color: hotpink;
+    box-shadow: 0 0 20px hotpink, 0 0 40px hotpink;
+    animation: pulsePink 1.5s infinite;
+  }
+  .transfer:hover {
+    background: rgba(255, 20, 147, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 0 30px hotpink, 0 0 60px hotpink;
+  }
+  @keyframes pulsePink {
+    0% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+    50% { box-shadow: 0 0 35px hotpink, 0 0 60px hotpink; }
+    100% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🚀 Transfer Tetris Earnings</h1>
+
+<audio id="clickSound" src="click.wav" preload="auto"></audio>
+
+<button id="connectBtn" class="btn">Connect Wallet</button>
+
+<div class="card" id="transferCard" style="display:none">
+  <div><strong>Wallet:</strong> <span id="walletAddress"></span></div>
+  <div><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
+  <div><strong>Tetris Earnings:</strong> <span id="tetris">0</span></div>
+  <div style="margin-top:10px;font-size:18px"><strong>Total Withdrawable:</strong> <span id="total">0</span></div>
+  <button class="btn transfer" id="transferBtn" style="display:none">Transfer Now</button>
+</div>
+
+<script>
+(async ()=>{
+  let web3, provider, account, tiffyContract, tiffyDecimals;
+  const clickSound = document.getElementById("clickSound");
+
+  // TiffyAI contract details (Replace with your actual values)
+  const TIFFY_TOKEN_ADDRESS = "0x...";
+  const TIFFY_TOKEN_ABI = [
+    { "constant": true, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "payable": false, "stateMutability": "view", "type": "function" },
+    { "constant": false, "inputs": [{ "name": "recipient", "type": "address" }, { "name": "amount", "type": "uint256" }], "name": "transfer", "outputs": [{ "name": "", "type": "bool" }], "payable": false, "stateMutability": "nonpayable", "type": "function" }
+  ];
+
+  const wModal = new Web3Modal.default({
+    cacheProvider:false,
+    providerOptions:{
+      walletconnect:{package:window.WalletConnectProvider?.default||{}, options:{ rpc:{56:"https://bsc-dataseed.binance.org/"}}}
+    }
+  });
+
+  document.getElementById("connectBtn").onclick = async() => {
+    clickSound.play();
+    try {
+      provider = await wModal.connect();
+      web3 = new Web3(provider);
+
+      const cid = await web3.eth.getChainId();
+      if(cid !== 56){
+        try { 
+          await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
+        }
+        catch(e){
+          alert("❗ Please switch to BNB Smart Chain"); 
+          return; 
+        }
+      }
+
+      const accts = await web3.eth.getAccounts();
+      account = accts[0];
+
+      // Initialize contract and get decimals
+      tiffyContract = new web3.eth.Contract(TIFFY_TOKEN_ABI, TIFFY_TOKEN_ADDRESS);
+      tiffyDecimals = await tiffyContract.methods.decimals().call();
+
+      document.getElementById("walletAddress").textContent = account;
+      document.getElementById("connectBtn").style.display = "none";
+      document.getElementById("transferCard").style.display = "inline-block";
+      loadBalances();
+    } catch (e) {
+      console.error("Connection failed:", e);
+      alert("Error connecting wallet.");
+    }
+  };
+
+  // These functions now use BigNumber to handle decimals
+  function getClaimed(){
+    // Get the claimed amount as a string and create a BigNumber instance
+    const claimedStr = localStorage.getItem(`tiffyClaimed_${account}`) || "0";
+    return new BigNumber(claimedStr);
+  }
+
+  function getTetris(){
+    // Get the tetris score as a string and create a BigNumber instance
+    const tetrisStr = localStorage.getItem("tetrusScore") || "0";
+    return new BigNumber(tetrisStr);
+  }
+
+  function loadBalances(){
+    const claimed = getClaimed();
+    const tetris = getTetris();
+    // Perform addition with BigNumber and format for display
+    const total = claimed.plus(tetris);
+
+    document.getElementById("claimed").textContent = claimed.toFixed(2);
+    document.getElementById("tetris").textContent = tetris.toFixed(2);
+    document.getElementById("total").textContent = total.toFixed(2);
+    document.getElementById("transferBtn").style.display = tetris.gt(0) ? "inline-block" : "none";
+  }
+
+  document.getElementById("transferBtn").onclick = async () => {
+    clickSound.play();
+    const tetrisPoints = getTetris();
+
+    if (tetrisPoints.isZero()) {
+        alert("No Tetris earnings to withdraw.");
+        return;
+    }
+
+    try {
+      // Convert the BigNumber score to the smallest unit for the blockchain transaction
+      const amountWithDecimals = web3.utils.toBN(tetrisPoints.shiftedBy(tiffyDecimals).toFixed());
+      
+      // Placeholder for the actual on-chain transfer
+      console.log("Attempting to transfer on-chain:", amountWithDecimals.toString());
+      // You would replace the next line with your actual smart contract interaction
+      // await tiffyContract.methods.transfer(account, amountWithDecimals).send({ from: account });
+
+      // After successful transfer, update local storage
+      const claimedKey = `tiffyClaimed_${account}`;
+      const claimed = getClaimed();
+      const newTotal = claimed.plus(tetrisPoints);
+
+      // Store the new total as a string to preserve decimals
+      localStorage.setItem(claimedKey, newTotal.toString());
+      localStorage.setItem("tetrusScore", "0");
+      
+      loadBalances();
+      alert(`✅ Transferred ${tetrisPoints.toFixed(2)} Tetris earnings to TIFFY!`);
+
+    } catch (error) {
+      console.error("Transfer failed:", error);
+      alert("❗ Withdrawal failed. Please try again.");
+    }
+  };
+
+})();
+</script>
+
+</body>
+</html>
