@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Transfer Tetris Earnings to TIFFY</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+<script src="https://unpkg.com/web3modal@1.9.12/dist/index.js"></script>
+<style>
+  body {
+    background: radial-gradient(circle at top, #020024, #090979, #000);
+    color: #0ff;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    text-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    margin-bottom: 30px;
+    font-weight: 700;
+  }
+  .card {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border: 1px solid #0ff;
+    border-radius: 16px;
+    display: inline-block;
+    box-shadow: 0 0 25px #0ff, inset 0 0 40px rgba(0,255,255,0.2);
+    backdrop-filter: blur(12px);
+    margin-top: 20px;
+    transition: all 0.4s ease;
+  }
+  .btn {
+    margin-top: 20px;
+    padding: 14px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+  }
+  /* Connect Button Style */
+  #connectBtn {
+    background: rgba(0, 200, 255, 0.15);
+    border: 1px solid #0ff;
+    color: #0ff;
+    box-shadow: 0 0 20px #00faff, 0 0 40px #00faff;
+    backdrop-filter: blur(8px);
+    animation: pulseBlue 1.8s infinite;
+  }
+  #connectBtn:hover {
+    background: rgba(0, 200, 255, 0.3);
+    transform: scale(1.08);
+    box-shadow: 0 0 30px #00faff, 0 0 70px #00faff;
+  }
+  @keyframes pulseBlue {
+    0% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+    50% { box-shadow: 0 0 40px #00faff, 0 0 70px #00faff; }
+    100% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
+  }
+  /* Transfer Button Style */
+  .transfer {
+    background: rgba(255, 20, 147, 0.15);
+    border: 1px solid hotpink;
+    color: hotpink;
+    box-shadow: 0 0 20px hotpink, 0 0 40px hotpink;
+    backdrop-filter: blur(8px);
+    animation: pulsePink 1.5s infinite;
+  }
+  .transfer:hover {
+    background: rgba(255, 20, 147, 0.3);
+    transform: scale(1.08);
+    box-shadow: 0 0 30px hotpink, 0 0 70px hotpink;
+  }
+  @keyframes pulsePink {
+    0% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+    50% { box-shadow: 0 0 40px hotpink, 0 0 70px hotpink; }
+    100% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🚀 Transfer Tetris Earnings</h1>
+
+<audio id="clickSound" src="click.wav" preload="auto"></audio>
+
+<button id="connectBtn" class="btn">Connect Wallet</button>
+
+<div class="card" id="transferCard" style="display:none">
+  <div><strong>Wallet:</strong> <span id="walletAddress"></span></div>
+  <div><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
+  <div><strong>Tetris Earnings:</strong> <span id="tetris">0</span></div>
+  <div style="margin-top:10px;font-size:18px"><strong>Total Withdrawable:</strong> <span id="total">0</span></div>
+  <button class="btn transfer" id="transferBtn" style="display:none">Transfer Now</button>
+</div>
+
+<script>
+(async ()=>{
+  let web3, provider, account;
+  const clickSound = document.getElementById("clickSound");
+
+  const wModal = new Web3Modal.default({
+    cacheProvider:false,
+    providerOptions:{
+      walletconnect:{package:window.WalletConnectProvider?.default||{}, options:{ rpc:{56:"https://bsc-dataseed.binance.org/"}}}
+    }
+  });
+
+  document.getElementById("connectBtn").onclick = async() => {
+    clickSound.play();
+    provider = await wModal.connect();
+    web3 = new Web3(provider);
+
+    const cid = await web3.eth.getChainId();
+    if(cid !== 56){
+      try { 
+        await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
+      }
+      catch(e){
+        if(provider.isBitget || provider.isBitKeep){
+          try { 
+            await provider.request({ method:"wallet_addEthereumChain", params:[{chainId:"0x38",chainName:"BNB Smart Chain",rpcUrls:["https://bsc-dataseed.binance.org/"],nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},blockExplorerUrls:["https://bscscan.com"]}]});
+          }
+          catch{
+            alert("🌐 Bitget: please switch BSC manually.");
+            return;
+          }
+        } else { 
+          alert("❗ Please switch to BNB Smart Chain"); 
+          return; 
+        }
+      }
+    }
+
+    const accts = await web3.eth.getAccounts();
+    account = accts[0];
+
+    document.getElementById("walletAddress").textContent = account;
+    document.getElementById("connectBtn").style.display = "none";
+    document.getElementById("transferCard").style.display = "inline-block";
+    loadBalances();
+  };
+
+  function getClaimed(){
+    return parseFloat(localStorage.getItem(`tiffyClaimed_${account}`) || "0");
+  }
+
+  function getTetris(){
+    return parseFloat(localStorage.getItem("tetrusScore") || "0");
+  }
+
+  function loadBalances(){
+    const claimed = getClaimed();
+    const tetris = getTetris();
+    document.getElementById("claimed").textContent = claimed.toFixed(2);
+    document.getElementById("tetris").textContent = tetris.toFixed(2);
+    const total = claimed + tetris;
+    document.getElementById("total").textContent = total.toFixed(2);
+    document.getElementById("transferBtn").style.display = tetris > 0 ? "inline-block" : "none";
+  }
+
+  document.getElementById("transferBtn").onclick = () => {
+    clickSound.play();
+    const claimedKey = `tiffyClaimed_${account}`;
+    const claimed = getClaimed();
+    const tetris = getTetris();
+    const newTotal = claimed + tetris;
+    localStorage.setItem(claimedKey, newTotal.toString());
+    localStorage.setItem("tetrusScore", "0");
+    loadBalances();
+    alert(`✅ Transferred ${tetris.toFixed(2)} Tetris earnings to TIFFY!`);
+  };
+
+})();
+</script>
+
+</body>
+</html>
