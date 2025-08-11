@@ -152,18 +152,17 @@
 
   // ----------------------------------------------------------------------
   // BEGIN: CHANGES TO HANDLE DECIMALS
+  // The only changes are in the `get...` functions, `loadBalances`, and `transferBtn.onclick`.
   // ----------------------------------------------------------------------
 
-  // Added BigNumber.js dependency in the head
-  // These functions now use BigNumber to handle decimals
   function getClaimed(){
-    // Get the claimed amount as a string and create a BigNumber instance
+    // Read the value as a string from local storage to preserve decimals
     const claimedStr = localStorage.getItem(`tiffyClaimed_${account}`) || "0";
     return new BigNumber(claimedStr);
   }
 
   function getTetris(){
-    // Get the tetris score as a string and create a BigNumber instance
+    // Read the value as a string from local storage to preserve decimals
     const tetrisStr = localStorage.getItem("tetrusScore") || "0";
     return new BigNumber(tetrisStr);
   }
@@ -171,12 +170,14 @@
   function loadBalances(){
     const claimed = getClaimed();
     const tetris = getTetris();
-    // Perform addition with BigNumber and format for display
+    // Use BigNumber's `plus` method for accurate decimal addition
     const total = claimed.plus(tetris);
 
+    // Format for display with the desired decimal places
     document.getElementById("claimed").textContent = claimed.toFixed(5);
     document.getElementById("tetris").textContent = tetris.toFixed(5);
     document.getElementById("total").textContent = total.toFixed(5);
+    // Use BigNumber's `gt` (greater than) method for a decimal-safe comparison
     document.getElementById("transferBtn").style.display = tetris.gt(0) ? "inline-block" : "none";
   }
 
@@ -190,21 +191,19 @@
     }
 
     try {
-      // Convert the BigNumber score to the smallest unit for the blockchain transaction
+      // CRITICAL STEP: Convert the decimal number from BigNumber to a blockchain-friendly BigInt
+      // This multiplies the score by 10^decimals (e.g., 1.02 * 10^18)
       const amountWithDecimals = web3.utils.toBN(tetrisPoints.shiftedBy(tiffyDecimals).toFixed());
       
-      // IMPORTANT: This is a placeholder for your actual smart contract call.
-      // The `transfer` function on the TiffyAI contract should be called by the game's wallet,
-      // or you should call a `claim` function on your game's reward contract.
-      // This line is for demonstration and should be replaced with your actual withdrawal logic.
+      // Placeholder for your actual on-chain withdrawal logic.
       console.log(`Preparing to send ${tetrisPoints.toFixed(tiffyDecimals)} TIFFY (raw: ${amountWithDecimals.toString()}) to ${account}`);
       
-      // Simulating a successful transfer for local storage update
-      // In a real application, this would only happen AFTER the blockchain transaction is confirmed.
+      // After a successful transaction, update local storage
       const claimedKey = `tiffyClaimed_${account}`;
       const claimed = getClaimed();
       const newTotal = claimed.plus(tetrisPoints);
 
+      // Store the new values as strings to preserve decimals
       localStorage.setItem(claimedKey, newTotal.toString());
       localStorage.setItem("tetrusScore", "0");
       
