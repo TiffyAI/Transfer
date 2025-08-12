@@ -62,73 +62,23 @@
     50% { box-shadow: 0 0 40px #00faff, 0 0 70px #00faff; }
     100% { box-shadow: 0 0 15px #00faff, 0 0 25px #00faff; }
   }
-  .browser-btn {
-    background: rgba(147, 20, 255, 0.15);
-    border: 1px solid mediumpurple;
-    color: mediumpurple;
-    box-shadow: 0 0 20px mediumpurple, 0 0 40px mediumpurple;
+  .transfer {
+    background: rgba(255, 20, 147, 0.15);
+    border: 1px solid hotpink;
+    color: hotpink;
+    box-shadow: 0 0 20px hotpink, 0 0 40px hotpink;
     backdrop-filter: blur(8px);
-    animation: pulsePurple 1.8s infinite;
-    margin-left: 10px;
+    animation: pulsePink 1.5s infinite;
   }
-  .browser-btn:hover {
-    background: rgba(147, 20, 255, 0.3);
+  .transfer:hover {
+    background: rgba(255, 20, 147, 0.3);
     transform: scale(1.08);
-    box-shadow: 0 0 30px mediumpurple, 0 0 70px mediumpurple;
+    box-shadow: 0 0 30px hotpink, 0 0 70px hotpink;
   }
-  @keyframes pulsePurple {
-    0% { box-shadow: 0 0 15px mediumpurple, 0 0 25px mediumpurple; }
-    50% { box-shadow: 0 0 40px mediumpurple, 0 0 70px mediumpurple; }
-    100% { box-shadow: 0 0 15px mediumpurple, 0 0 25px mediumpurple; }
-  }
-  .withdraw {
-    background: rgba(255, 215, 0, 0.15);
-    border: 1px solid gold;
-    color: gold;
-    box-shadow: 0 0 20px gold, 0 0 40px gold;
-    backdrop-filter: blur(8px);
-  }
-  .withdraw:hover {
-    background: rgba(255, 215, 0, 0.3);
-    transform: scale(1.08);
-    box-shadow: 0 0 30px gold, 0 0 70px gold;
-  }
-  /* Popup styles */
-  .wallet-popup {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-  .wallet-popup-inner {
-    background: rgba(0,0,0,0.6);
-    border: 1px solid #0ff;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 0 25px #0ff;
-    text-align: center;
-  }
-  .wallet-btn {
-    display: block;
-    margin: 10px auto;
-    padding: 12px 20px;
-    font-size: 16px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(to right,#00f0ff,#4b6cb7);
-    color: #fff;
-    cursor: pointer;
-    width: 200px;
-    box-shadow: 0 0 15px #0ff;
-  }
-  .close-popup {
-    margin-top: 15px;
-    color: #ff6666;
-    cursor: pointer;
-    text-decoration: underline;
+  @keyframes pulsePink {
+    0% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
+    50% { box-shadow: 0 0 40px hotpink, 0 0 70px hotpink; }
+    100% { box-shadow: 0 0 15px hotpink, 0 0 25px hotpink; }
   }
 </style>
 </head>
@@ -139,36 +89,19 @@
 <audio id="clickSound" src="click.wav" preload="auto"></audio>
 
 <button id="connectBtn" class="btn">Connect Wallet</button>
-<button id="browserConnectBtn" class="btn browser-btn">Browser Connection</button>
 
 <div class="card" id="transferCard" style="display:none">
-  <div><strong>Wallet:</strong> <span id="walletAddress"></span></div>
-  <div><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
-  <div><strong>Synchronized Game Earnings:</strong> <span id="tetris">0</span></div>
+  <div style="margin-bottom:8px"><strong>Wallet:</strong> <span id="walletAddress"></span></div>
+  <div style="margin-bottom:6px"><strong>Claimed TIFFY:</strong> <span id="claimed">0</span></div>
+  <div style="margin-bottom:6px"><strong>Synchronized Game Earnings:</strong> <span id="tetris">0</span></div>
   <div style="margin-top:10px;font-size:18px"><strong>Total Withdrawable:</strong> <span id="total">0</span></div>
-  <button class="btn withdraw" id="withdrawBtn">Withdraw</button>
-</div>
-
-<!-- Wallet Choice Popup -->
-<div class="wallet-popup" id="walletPopup">
-  <div class="wallet-popup-inner">
-    <button class="wallet-btn" onclick="chooseWallet('metamask')">MetaMask</button>
-    <button class="wallet-btn" onclick="chooseWallet('trust')">Trust Wallet</button>
-    <button class="wallet-btn" onclick="chooseWallet('okx')">OKX Wallet</button>
-    <div class="close-popup" onclick="closePopup()">Close</div>
-  </div>
+  <button class="btn transfer" id="transferBtn" style="display:none">Transfer Now</button>
 </div>
 
 <script>
 (async ()=>{
   let web3, provider, account;
   const clickSound = document.getElementById("clickSound");
-  const cAddr = "0xE488253DD6B4D31431142F1b7601C96f24Fb7dd5";
-  const ABI = [
-    {inputs:[],name:"claim",outputs:[],stateMutability:"payable",type:"function"},
-    {inputs:[],name:"FIXED_BNB_FEE",outputs:[{internalType:"uint256",name:"",type:"uint256"}],stateMutability:"view",type:"function"}
-  ];
-  let contract, fee;
 
   const wModal = new Web3Modal.default({
     cacheProvider:false,
@@ -179,24 +112,46 @@
 
   document.getElementById("connectBtn").onclick = async() => {
     clickSound.play();
-    await connectWallet();
-    loadBalances();
-  };
+    provider = await wModal.connect();
+    web3 = new Web3(provider);
 
-  document.getElementById("browserConnectBtn").onclick = () => {
-    clickSound.play();
-    account = null;
-    document.getElementById("walletAddress").textContent = "Not Connected";
+    const cid = await web3.eth.getChainId();
+    if(cid !== 56){
+      try { 
+        await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
+      }
+      catch(e){
+        if(provider.isBitget || provider.isBitKeep){
+          try { 
+            await provider.request({ method:"wallet_addEthereumChain", params:[{chainId:"0x38",chainName:"BNB Smart Chain",rpcUrls:["https://bsc-dataseed.binance.org/"],nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},blockExplorerUrls:["https://bscscan.com"]}]});
+          }
+          catch{
+            alert("🌐 Bitget: please switch BSC manually.");
+            return;
+          }
+        } else { 
+          alert("❗ Please switch to BNB Smart Chain"); 
+          return; 
+        }
+      }
+    }
+
+    const accts = await web3.eth.getAccounts();
+    account = accts[0];
+
+    // Shorten wallet display
+    const shortAddr = account ? `${account.slice(0,6)}...${account.slice(-4)}` : '';
+    document.getElementById("walletAddress").textContent = shortAddr;
+
     document.getElementById("connectBtn").style.display = "none";
-    document.getElementById("browserConnectBtn").style.display = "none";
     document.getElementById("transferCard").style.display = "inline-block";
     loadBalances();
   };
 
   function getClaimed(){
-    const key = account ? `tiffyClaimed_${account}` : "tiffyClaimed_browser";
-    return parseFloat(localStorage.getItem(key) || "0");
+    return parseFloat(localStorage.getItem(`tiffyClaimed_${account}`) || "0");
   }
+
   function getTetris(){
     return parseFloat(localStorage.getItem("tetrusScore") || "0");
   }
@@ -204,65 +159,24 @@
   function loadBalances(){
     const claimed = getClaimed();
     const tetris = getTetris();
-    const total = claimed + tetris;
     document.getElementById("claimed").textContent = claimed.toFixed(2);
     document.getElementById("tetris").textContent = tetris.toFixed(2);
+    const total = claimed + tetris;
     document.getElementById("total").textContent = total.toFixed(2);
-    document.getElementById("transferCard").style.display = "inline-block";
+    document.getElementById("transferBtn").style.display = tetris > 0 ? "inline-block" : "none";
   }
 
-  document.getElementById("withdrawBtn").onclick = () => {
+  document.getElementById("transferBtn").onclick = () => {
     clickSound.play();
-    document.getElementById("walletPopup").style.display = "flex";
-  };
-
-  window.closePopup = function(){
-    document.getElementById("walletPopup").style.display = "none";
-  }
-
-  window.chooseWallet = async function(type){
-    clickSound.play();
-    await connectWallet();
-    await withdraw();
-    closePopup();
-  }
-
-  async function connectWallet(){
-    provider = await wModal.connect();
-    web3 = new Web3(provider);
-    const cid = await web3.eth.getChainId();
-    if(cid !== 56){
-      await provider.request({ method:"wallet_switchEthereumChain", params:[{chainId:"0x38"}] });
-    }
-    const accts = await web3.eth.getAccounts();
-    account = accts[0];
-    document.getElementById("walletAddress").textContent = account.slice(0,6)+"..."+account.slice(-4);
-    contract = new web3.eth.Contract(ABI, cAddr);
-    fee = await contract.methods.FIXED_BNB_FEE().call();
-    document.getElementById("connectBtn").style.display = "none";
-    document.getElementById("browserConnectBtn").style.display = "none";
-  }
-
-  async function withdraw(){
     const claimedKey = `tiffyClaimed_${account}`;
-    let claimed = getClaimed();
-    let tetris = getTetris();
-    let total = claimed + tetris;
-    if(total <= 0) return alert("No TIFFY to withdraw!");
-    await contract.methods.claim().send({ from:account, value:fee });
-    const backendAmt = total - 1;
-    if(backendAmt > 0){
-      await fetch("https://tiffyai-wh-wa.onrender.com/reward", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({wallet:account,amount:backendAmt})
-      });
-    }
-    localStorage.setItem(claimedKey,"0");
-    localStorage.setItem("tetrusScore","0");
+    const claimed = getClaimed();
+    const tetris = getTetris();
+    const newTotal = claimed + tetris;
+    localStorage.setItem(claimedKey, newTotal.toString());
+    localStorage.setItem("tetrusScore", "0");
     loadBalances();
-    alert(`✅ Withdrawal of ${total.toFixed(2)} TIFFY complete!`);
-  }
+    alert(`✅ Transferred ${tetris.toFixed(2)} from your games earnings to your TIFFY Vault! All now ready to be withdrawn directly to your wallet. Just make sure you have a bit of BNB ready for gas!`);
+  };
 
 })();
 </script>
